@@ -1,0 +1,54 @@
+{
+  "name": "ngxs-pouchdb-plugin",
+  "version": "1.0.0",
+  "description": "Storage plugin for NGXS. See [repo](https://github.com/ngxs/store) for more info.",
+  "author": "Suresh Jaladanki",
+  "license": "MIT",
+  "main": "index.ts",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "test": "ng test",
+    "lint": "ng lint",
+    "e2e": "ng e2e"
+  },
+  "dependencies": {
+    "@angular/common": "^7.2.12",
+    "@angular/compiler": "^7.2.12",
+    "@angular/core": "^7.2.12",
+    "@angular/platform-browser": "^7.2.12",
+    "@angular/platform-browser-dynamic": "^7.2.12",
+    "@ngxs/store": "^3.4.3",
+    "core-js": "^2.5.4",
+    "pouchdb": "^7.0.0",
+    "rxjs": "^6.4.0",
+    "zone.js": "^0.9.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~0.13.6",
+    "@angular/cli": "~7.3.8",
+    "@angular/compiler-cli": "^7.2.12",
+    "@angular/language-service": "^7.2.12",
+    "@types/core-js": "^2.5.0",
+    "@types/jasmine": "3.3.10",
+    "@types/jasminewd2": "2.0.6",
+    "@types/node": "8.9.5",
+    "codelyzer": "4.5.0",
+    "jasmine-core": "3.4.0",
+    "jasmine-spec-reporter": "4.2.1",
+    "karma": "3.1.4",
+    "karma-chrome-launcher": "2.2.0",
+    "karma-coverage-istanbul-reporter": "2.0.4",
+    "karma-jasmine": "^2.0.0",
+    "karma-jasmine-html-reporter": "1.4.0",
+    "ng-packagr": "4.7.1",
+    "protractor": "5.4.2",
+    "ts-node": "~5.0.1",
+    "tslint": "~5.9.1",
+    "typescript": "~3.1.6"
+  }
+}
