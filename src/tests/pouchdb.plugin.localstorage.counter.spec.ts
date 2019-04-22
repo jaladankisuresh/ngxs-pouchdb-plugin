@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { NgxsModule, State, Store, Action } from '@ngxs/store';
 
-import { NgxsPouchDbPluginModule, StorageOption, StorageEngine, STORAGE_ENGINE } from '../..';
+import { NgxsPouchDbPluginModule, StorageOption, StorageEngine } from '../..';
 import { StateContext } from '@ngxs/store';
 
 describe('NgxsAsyncPouchDbPlugin LocalStorage', () => {

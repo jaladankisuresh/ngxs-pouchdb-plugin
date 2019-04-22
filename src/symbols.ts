@@ -71,7 +71,7 @@ export interface AsyncStorageEngine {
   length(): Observable<number>;
   getItem(key): Observable<any>;
   setItem(key, val): Observable<any>;
-  removeItem(key): void;
+  removeItem(key): Observable<any>;
   clear(): void;
   key(val: number): Observable<string>;
 }
@@ -94,8 +94,8 @@ export class AsyncStorageEngineProxy implements AsyncStorageEngine {
     return of(this._storage.setItem(key, val));
   }
 
-  public removeItem(key): void {
-    return this._storage.removeItem(key);
+  public removeItem(key): Observable<any> {
+    return of(this._storage.removeItem(key));
   }
 
   public clear(): void {

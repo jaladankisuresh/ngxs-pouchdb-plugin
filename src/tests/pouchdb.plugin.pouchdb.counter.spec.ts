@@ -5,10 +5,10 @@ import { NgxsModule, State, Store, Action, NgxsOnInit } from '@ngxs/store';
 import { NgxsPouchDbPluginModule, StorageOption, StorageEngine } from '../..';
 import { StateContext } from '@ngxs/store';
 import { AsyncStorageEngine, STORAGE_ENGINE } from 'src/symbols';
-import { Observable, from, of, zip, throwError, merge  } from 'rxjs';
+import { Observable, from, of, zip, throwError, merge } from 'rxjs';
 import { DB_REF, localDB } from 'src/providers/db.provider';
 import { Inject } from '@angular/core';
-import { tap, first, catchError, filter, mergeMap } from 'rxjs/operators';
+import { first, catchError, filter, mergeMap } from 'rxjs/operators';
 
 describe('NgxsAsyncPouchDbPlugin', () => {
   class Increment {
@@ -106,13 +106,21 @@ describe('NgxsAsyncPouchDbPlugin', () => {
       );
     }
 
-    public removeItem(key): void {
-      this.getItem(key).subscribe( doc => {
-        if(doc === undefined) return new Error('Error while trying to set an undefined document');
+    public removeItem(key): Observable<any> {
+      return this.getItem(key).pipe(
+        mergeMap( doc => {
+          if(doc === undefined) return throwError('Error while trying to remove an undefined document');
+
+          doc._deleted = true;
+          return from(this.db.put(doc));
+        })
+      );
+      // this.getItem(key).subscribe( doc => {
+      //   if(doc === undefined) return new Error('Error while trying to remove an undefined document');
         
-        doc._deleted = true;
-        this.db.put(doc);
-      });
+      //   doc._deleted = true;
+      //   this.db.put(doc);
+      // });
     }
 
     public clear(): void { 
@@ -242,7 +250,8 @@ describe('NgxsAsyncPouchDbPlugin', () => {
     class InitMyStore extends MyStore implements NgxsOnInit {
       ngxsOnInit() {
         const store = TestBed.get(Store);
-        const pouchDbStorage = TestBed.get(STORAGE_ENGINE); 
+        const pouchDbStorage = TestBed.get(STORAGE_ENGINE);
+
         // 1st dispatch event
         store.dispatch(new Increment()).subscribe(_ => {
           // 2nd dispatch event
