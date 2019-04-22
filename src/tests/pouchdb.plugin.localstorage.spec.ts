@@ -45,41 +45,28 @@ describe('NgxsAsyncPouchDbPlugin LocalStorage', () => {
   class LazyLoadedStore {}
 
   class LocalStorageEngine implements StorageEngine {
-    // static storage: any = {
-    //   counter: {
-    //     count: 100
-    //   }
-    // };
-
     get length() {
-      console.log('length');
       return Object.keys(localStorage).length;
     }
 
     getItem(key: string): any {
-      console.log('getItem key:', key);
       let val = localStorage.getItem(key);
-      console.log('getItem key, val:', { key, val });
       return val;
     }
 
     setItem(key: string, val: any) {
-      console.log('setItem key:', key, val);
       localStorage.setItem(key, val);
     }
 
     removeItem(key: string) {
-      console.log('removeItem key:', key);
       localStorage.removeItem(key);
     }
 
     clear() {
-      console.log('clear');
       localStorage.clear();
     }
 
     key(index: number) {
-      console.log('key');
       return Object.keys(localStorage)[index];
     }
   }
@@ -108,7 +95,6 @@ describe('NgxsAsyncPouchDbPlugin LocalStorage', () => {
     store
       .select((state: any) => state.counter)
       .subscribe((state: StateModel) => {
-        console.log('expect value', state.count, localStorage.getItem('counter'))
         expect(state.count).toBe(100);
         expect(localStorage.getItem('counter')).toBe(
           JSON.stringify({ count: 100 })
@@ -116,7 +102,7 @@ describe('NgxsAsyncPouchDbPlugin LocalStorage', () => {
       });
   });
 
-  it('should save data to localstorage', () => {
+  it('should save data to localstorage', done => {
     localStorage.setItem('counter', JSON.stringify({ count: 100 }));
 
     TestBed.configureTestingModule({
@@ -129,7 +115,6 @@ describe('NgxsAsyncPouchDbPlugin LocalStorage', () => {
     });
 
     const store: Store = TestBed.get(Store);
-
     store.dispatch(new Increment());
     store.dispatch(new Increment());
     store.dispatch(new Increment());
@@ -140,11 +125,10 @@ describe('NgxsAsyncPouchDbPlugin LocalStorage', () => {
       .select((state: any) => state.counter)
       .subscribe((state: StateModel) => {
         expect(state.count).toBe(105);
-        console.log('getItem counter', localStorage.getItem('counter'))
-        
         expect(localStorage.getItem('counter')).toBe(
           JSON.stringify({ count: 105 })
         );
+        done();
       });
   });
   
@@ -169,7 +153,6 @@ describe('NgxsAsyncPouchDbPlugin LocalStorage', () => {
       store
         .select((state: any) => state.counter)
         .subscribe((state: StateModel) => {
-          console.log('state.count', state.count)
           expect(state.count).toBe(123);
         });
     });

@@ -5,12 +5,12 @@ import { NgxsModule, State, Store, Action, NgxsOnInit } from '@ngxs/store';
 import { NgxsPouchDbPluginModule, StorageOption, StorageEngine } from '../..';
 import { StateContext } from '@ngxs/store';
 import { AsyncStorageEngine, STORAGE_ENGINE } from 'src/symbols';
-import { Observable, from, of, zip, throwError, concat  } from 'rxjs';
+import { Observable, from, of, zip, throwError, merge  } from 'rxjs';
 import { DB_REF, localDB } from 'src/providers/db.provider';
 import { Inject } from '@angular/core';
-import { tap, first, catchError, merge, filter, mergeMap } from 'rxjs/operators';
+import { tap, first, catchError, filter, mergeMap } from 'rxjs/operators';
 
-xdescribe('NgxsAsyncPouchDbPlugin', () => {
+describe('NgxsAsyncPouchDbPlugin', () => {
   class Increment {
     static type = 'INCREMENT';
   }
@@ -51,32 +51,26 @@ xdescribe('NgxsAsyncPouchDbPlugin', () => {
     };
 
     get length() {
-      console.log('length');
       return Object.keys(LocalStorageEngine.storage).length;
     }
 
     getItem(key: string) {
-      console.log('getItem key:', key);
       return LocalStorageEngine.storage[key];
     }
 
     setItem(key: string, val: any) {
-      console.log('setItem key:', key);
       LocalStorageEngine.storage[key] = val;
     }
 
     removeItem(key: string) {
-      console.log('removeItem key:', key);
       delete LocalStorageEngine.storage[key];
     }
 
     clear() {
-      console.log('clear');
       LocalStorageEngine.storage = {};
     }
 
     key(index: number) {
-      console.log('key');
       return Object.keys(LocalStorageEngine.storage)[index];
     }
   }
@@ -85,13 +79,11 @@ xdescribe('NgxsAsyncPouchDbPlugin', () => {
     constructor(@Inject(DB_REF) private db: any) { }
 
     public length(): Observable<number> {
-      console.log('length');
       let pCount: Promise<number> = this.db.info().then(info => info.doc_count);
       return from(pCount);
     }
 
     public getItem(key): Observable<any> {
-      console.log('getItem key:', key);
       const missingItem$ = from(this.db.get(key)).pipe(
         filter((doc: any) => doc.status === 404),
         catchError(_ => of(undefined))
@@ -99,48 +91,22 @@ xdescribe('NgxsAsyncPouchDbPlugin', () => {
       const existingItem$ = from(this.db.get(key)).pipe(
         filter((doc: any) => doc.status !== 404)
       );
-      return missingItem$.pipe(merge(existingItem$)).pipe(
-        tap(doc => console.log('getItem:', doc))
-      );
+      return merge(missingItem$, existingItem$);
     }
 
     public setItem(key, val): Observable<any> {
-      console.log('setItem key:', key, val);
-      // const pGetItem = this.getItem(key).toPromise();
-      // const pPutItem = pGetItem.then(doc => {
-      //   if(doc === undefined) return new Error('Error while trying to set an undefined document');
-
-      //   let data = stripMetaProperties(val);
-      //   doc = {...doc, ...data};
-      //   console.log('setItem:', doc);
-      //   return this.db.put({...doc, ...data}).then(result => console.log('put val', doc, 'with result', result));
-      // })
-      // return from(pPutItem);
       return this.getItem(key).pipe(
         mergeMap( doc => {
           if(doc === undefined) return throwError('Error while trying to set an undefined document');
 
           let data = stripMetaProperties(val);
           doc = {...doc, ...data};
-          console.log('setItem:', doc);
-          return from(this.db.put(doc))
-          .pipe(
-            tap(result => console.log('put val', doc, 'with result', result))
-          );
+          return from(this.db.put(doc));
         })
       );
-      this.getItem(key).subscribe( doc => {
-        if(doc === undefined) return new Error('Error while trying to set an undefined document');
-
-        let data = stripMetaProperties(val);
-        doc = {...doc, ...data};
-        console.log('setItem:', doc);
-        this.db.put(doc);
-      });
     }
 
     public removeItem(key): void {
-      console.log('removeItem key:', key);
       this.getItem(key).subscribe( doc => {
         if(doc === undefined) return new Error('Error while trying to set an undefined document');
         
@@ -149,13 +115,11 @@ xdescribe('NgxsAsyncPouchDbPlugin', () => {
       });
     }
 
-    public clear(): void {      
-      console.log('clear');
+    public clear(): void { 
       this.db.destroy();
     }
 
     public key(val: number): Observable<string> {
-        console.log('key');
         throw Error('Not Supported Exception');
     }
   }
@@ -186,8 +150,7 @@ xdescribe('NgxsAsyncPouchDbPlugin', () => {
     clearDatabase(done);
   });
 
-  it('should use a custom local storage engine', () => {   
-    console.log('Spec 1 Start');    
+  it('should use a custom local storage engine', () => { 
     TestBed.configureTestingModule({
       imports: [
         NgxsModule.forRoot([MyStore]),
@@ -217,7 +180,7 @@ xdescribe('NgxsAsyncPouchDbPlugin', () => {
         expect(state.count).toBe(105);
 
         expect(LocalStorageEngine.storage['counter']).toEqual({ count: 105 });
-      });
+      })
   });
 
   it('should get initial data from custom async storage using PouchDb as storage engine', done => {  
@@ -278,7 +241,6 @@ xdescribe('NgxsAsyncPouchDbPlugin', () => {
     })
     class InitMyStore extends MyStore implements NgxsOnInit {
       ngxsOnInit() {
-        console.log('inside onInit.....');
         const store = TestBed.get(Store);
         const pouchDbStorage = TestBed.get(STORAGE_ENGINE); 
         // 1st dispatch event
@@ -293,9 +255,7 @@ xdescribe('NgxsAsyncPouchDbPlugin', () => {
               dbValue = stripMetaProperties(dbValue);
               expect(state.count).toBe(102); 
               expect(dbValue).toEqual({ count: 102 });
-              pouchDbStorage.getItem('counter').subscribe(doc => {
-                done();
-              });
+              done();
             });
           });
         });        
